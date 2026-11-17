@@ -20,6 +20,7 @@ Untuk nama folder atau base URL lain, letakkan proyek pada direktori tersebut da
 ## Fitur
 
 - Dashboard dengan statistik database, tugas terbaru, deadline mendatang, dan daftar overdue.
+- Calendar View bulanan untuk melihat tugas berdasarkan deadline, termasuk navigasi bulan dan penambahan tugas langsung dari tanggal pilihan.
 - CRUD tugas, filter/pencarian, sorting, dan pagination.
 - Checklist AJAX dengan urutan, edit, hapus, toggle, dan sinkronisasi progress/status lewat transaksi database.
 - Catatan, activity log, kategori unik, archive/restore, dan penghapusan permanen dengan konfirmasi.

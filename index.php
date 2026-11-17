@@ -11,6 +11,7 @@ $page = (string)($_GET['page'] ?? 'dashboard');
 $routes = [
     'dashboard' => 'dashboard.php',
     'tasks' => 'tasks.php',
+    'calendar' => 'calendar.php',
     'task-detail' => 'task-detail.php',
     'task-create' => 'task-create.php',
     'task-edit' => 'task-edit.php',
@@ -31,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !str_starts_with((string)($_GET['pa
 
 $pageTitle = match ($page) {
     'tasks' => 'All Tasks',
+    'calendar' => 'Calendar',
     'task-detail' => 'Task Details',
     'task-create' => 'New Task',
     'task-edit' => 'Edit Task',

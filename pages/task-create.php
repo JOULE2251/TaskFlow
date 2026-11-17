@@ -1,6 +1,15 @@
 <?php
 $isEdit = $page === 'task-edit';
-$task = $isEdit ? get_task($pdo, valid_id($_GET['id'] ?? null)) : ['id' => 0, 'title' => '', 'description' => '', 'category_id' => null, 'priority' => 'Medium', 'deadline' => null];
+$prefilledDeadline = $_GET['deadline'] ?? '';
+if (!is_string($prefilledDeadline) || !preg_match('/^\d{4}-\d{2}-\d{2}$/D', $prefilledDeadline)) {
+    $prefilledDeadline = '';
+} else {
+    [$deadlineYear, $deadlineMonth, $deadlineDay] = array_map('intval', explode('-', $prefilledDeadline));
+    if (!checkdate($deadlineMonth, $deadlineDay, $deadlineYear)) {
+        $prefilledDeadline = '';
+    }
+}
+$task = $isEdit ? get_task($pdo, valid_id($_GET['id'] ?? null)) : ['id' => 0, 'title' => '', 'description' => '', 'category_id' => null, 'priority' => 'Medium', 'deadline' => $prefilledDeadline];
 $categories = $pdo->query('SELECT id, name FROM categories ORDER BY name')->fetchAll();
 $existingItems = $isEdit ? $pdo->prepare('SELECT title FROM task_items WHERE task_id = ? ORDER BY sort_order, id') : null;
 if ($existingItems) {
