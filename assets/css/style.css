@@ -106,7 +106,7 @@ button { color: inherit; }
 .overview-meta { display: flex; justify-content: space-between; margin-top: 11px; color: var(--muted); font-size: 10px; }
 .text-success { color: var(--success); }
 .deadlines-panel { min-height: 157px; }
-.deadline-list { display: grid; max-height: 400px; gap: 13px; overflow-y: auto; overscroll-behavior: contain; padding-right: 6px; scrollbar-color: #3a4962 #151c2c; scrollbar-width: thin; }
+.deadline-list { display: grid; min-height: 0; max-height: 80px; gap: 13px; overflow-y: auto; overscroll-behavior: contain; padding-right: 6px; scrollbar-color: #3a4962 #151c2c; scrollbar-width: thin; }
 .deadline-list::-webkit-scrollbar { width: 6px; }
 .deadline-list::-webkit-scrollbar-track { border-radius: 99px; background: #151c2c; }
 .deadline-list::-webkit-scrollbar-thumb { border: 1px solid #151c2c; border-radius: 99px; background: #3a4962; }
@@ -298,6 +298,7 @@ input:focus, textarea:focus, select:focus { border-color: #6366f1 !important; bo
     .mobile-offcanvas .side-nav { gap: 5px; }
     .dashboard-grid { grid-template-columns: 1fr; }
     .dashboard-side { grid-template-columns: 1fr 1fr; }
+    .deadline-list { max-height: 220px; }
     .detail-layout { grid-template-columns: minmax(0, 1.4fr) minmax(220px, .8fr); }
     .filter-panel { align-items: stretch; }
     .search-input { flex-basis: 100%; }
@@ -314,7 +315,7 @@ input:focus, textarea:focus, select:focus { border-color: #6366f1 !important; bo
     .stat-card { min-height: 112px; padding: 13px; }
     .stat-card > strong { font-size: 24px; }
     .dashboard-side { grid-template-columns: 1fr; }
-    .deadline-list { max-height: 320px; }
+    .deadline-list { max-height: 220px; }
     .panel { padding: 16px; }
     .task-row { gap: 8px; }
     .task-symbol { width: 29px; height: 29px; flex-basis: 29px; }
