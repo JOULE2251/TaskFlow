@@ -13,8 +13,8 @@ if ($year < 1000 || $year > 9999 || $month < 1 || $month > 12) {
 $calendarMonth = new DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month), $timezone);
 $monthStart = $calendarMonth->format('Y-m-d');
 $monthEnd = $calendarMonth->modify('last day of this month')->format('Y-m-d');
-$taskStmt = $pdo->prepare('SELECT id, title, status, priority, deadline FROM tasks WHERE archived_at IS NULL AND deadline BETWEEN ? AND ? ORDER BY deadline ASC, title ASC');
-$taskStmt->execute([$monthStart, $monthEnd]);
+$taskStmt = $pdo->prepare('SELECT id, title, status, priority, deadline FROM tasks WHERE workspace_id = ? AND archived_at IS NULL AND deadline BETWEEN ? AND ? ORDER BY deadline ASC, title ASC');
+$taskStmt->execute([active_workspace_id(), $monthStart, $monthEnd]);
 $tasksByDate = [];
 foreach ($taskStmt->fetchAll() as $task) {
     $tasksByDate[$task['deadline']][] = $task;

@@ -47,10 +47,24 @@ function validate_category(PDO $pdo, mixed $value): ?int
         return null;
     }
     $id = valid_id($value);
-    $stmt = $pdo->prepare('SELECT id FROM categories WHERE id = ?');
-    $stmt->execute([$id]);
+    $stmt = $pdo->prepare('SELECT id FROM categories WHERE id = ? AND workspace_id = ?');
+    $stmt->execute([$id, active_workspace_id()]);
     if (!$stmt->fetch()) {
         throw new InvalidArgumentException('Kategori tidak ditemukan.');
+    }
+    return $id;
+}
+
+function validate_project(PDO $pdo, mixed $value): ?int
+{
+    if ($value === '' || $value === null) {
+        return null;
+    }
+    $id = valid_id($value);
+    $stmt = $pdo->prepare('SELECT id FROM projects WHERE id = ? AND workspace_id = ?');
+    $stmt->execute([$id, active_workspace_id()]);
+    if (!$stmt->fetch()) {
+        throw new InvalidArgumentException('Proyek tidak ditemukan.');
     }
     return $id;
 }

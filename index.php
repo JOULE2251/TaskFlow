@@ -1,13 +1,44 @@
 <?php
 declare(strict_types=1);
 
-session_start();
+require_once __DIR__ . '/includes/session.php';
+start_secure_session();
 date_default_timezone_set('Asia/Jakarta');
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/helpers.php';
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/auth.php';
 
 $page = (string)($_GET['page'] ?? 'dashboard');
+if (in_array($page, ['login', 'register'], true)) {
+    if (isset($_SESSION['user_id'])) {
+        redirect('dashboard');
+    }
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        require __DIR__ . '/actions/auth.php';
+    }
+    require __DIR__ . '/pages/' . $page . '.php';
+    exit;
+}
+if ($page === 'logout') {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        exit('Metode tidak diizinkan.');
+    }
+    verify_csrf();
+    $cookie = session_get_cookie_params();
+    $_SESSION = [];
+    session_destroy();
+    setcookie(session_name(), '', [
+        'expires' => time() - 42000,
+        'path' => $cookie['path'],
+        'secure' => $cookie['secure'],
+        'httponly' => $cookie['httponly'],
+        'samesite' => $cookie['samesite'] ?? 'Lax',
+    ]);
+    redirect('login');
+}
+
 $routes = [
     'dashboard' => 'dashboard.php',
     'tasks' => 'tasks.php',
@@ -19,7 +50,15 @@ $routes = [
     'archive' => 'archive.php',
     'categories' => 'categories.php',
     'settings' => 'settings.php',
+    'profile' => 'profile.php',
+    'workspace-create' => 'workspace-create.php',
+    'team-members' => 'team-members.php',
+    'projects' => 'projects.php',
+    'notifications' => 'notifications.php',
 ];
+require_login();
+initialize_workspace_context($pdo);
+
 if (!isset($routes[$page])) {
     http_response_code(404);
     $page = 'dashboard';
@@ -33,6 +72,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !str_starts_with((string)($_GET['pa
 $pageTitle = match ($page) {
     'tasks' => 'All Tasks',
     'calendar' => 'Calendar',
+    'profile' => 'Profile',
+    'workspace-create' => 'Create Team Workspace',
+    'team-members' => 'Team Members',
+    'projects' => 'Projects',
+    'notifications' => 'Notifications',
     'task-detail' => 'Task Details',
     'task-create' => 'New Task',
     'task-edit' => 'Edit Task',

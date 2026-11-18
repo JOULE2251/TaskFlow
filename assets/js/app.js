@@ -164,6 +164,36 @@
         form.submit();
     });
 
+    document.querySelector('.comments-panel')?.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-edit-comment]');
+        if (!button) return;
+        Swal.fire({
+            title: 'Edit komentar',
+            input: 'textarea',
+            inputValue: button.dataset.content,
+            inputAttributes: {maxlength: 4000, rows: 5},
+            showCancelButton: true,
+            confirmButtonText: 'Simpan',
+            cancelButtonText: 'Batal',
+            inputValidator: value => !value?.trim() ? 'Komentar wajib diisi.' : undefined
+        }).then(answer => {
+            if (!answer.isConfirmed) return;
+            const form = document.createElement('form');
+            form.method = 'post';
+            form.action = `index.php?page=task-detail&id=${encodeURIComponent(document.querySelector('[data-task-id]').dataset.taskId)}`;
+            const fields = {csrf_token: csrf, action: 'task-comment-update', task_id: document.querySelector('[data-task-id]').dataset.taskId, comment_id: button.dataset.commentId, content: answer.value.trim(), return_page: 'task-detail'};
+            Object.entries(fields).forEach(([name, value]) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = name;
+                input.value = value;
+                form.append(input);
+            });
+            document.body.append(form);
+            form.submit();
+        });
+    });
+
     const fields = document.querySelector('#checklistFields');
     document.querySelector('#addChecklistField')?.addEventListener('click', () => {
         const row = document.createElement('div');
@@ -178,5 +208,24 @@
             if (fields.children.length > 1) row.remove();
             else row.querySelector('input').value = '';
         }
+    });
+
+    const projectModal = document.querySelector('[data-project-modal]');
+    const openProjectModal = () => {
+        if (!projectModal) return;
+        projectModal.hidden = false;
+        document.body.classList.add('modal-open');
+        projectModal.querySelector('input[name="name"]')?.focus();
+    };
+    const closeProjectModal = () => {
+        if (!projectModal) return;
+        projectModal.hidden = true;
+        document.body.classList.remove('modal-open');
+    };
+    document.querySelector('[data-project-create]')?.addEventListener('click', openProjectModal);
+    document.querySelector('[data-project-edit]')?.addEventListener('click', openProjectModal);
+    document.querySelectorAll('[data-project-modal-close]').forEach((button) => button.addEventListener('click', closeProjectModal));
+    projectModal?.addEventListener('click', (event) => {
+        if (event.target === projectModal) closeProjectModal();
     });
 })();

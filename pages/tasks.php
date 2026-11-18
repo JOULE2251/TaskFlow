@@ -13,8 +13,8 @@ $sorts = [
     'priority' => "FIELD(t.priority, 'Urgent', 'High', 'Medium', 'Low'), t.created_at DESC",
     'progress' => 'progress DESC, t.created_at DESC',
 ];
-$where = ['t.archived_at IS NULL'];
-$params = [];
+$where = ['t.archived_at IS NULL', 't.workspace_id = ?'];
+$params = [active_workspace_id()];
 if ($search !== '') {
     $where[] = '(t.title LIKE ? OR t.description LIKE ?)';
     $params[] = '%' . $search . '%';
@@ -52,7 +52,9 @@ $sql = "SELECT t.*, c.name AS category_name, COALESCE(i.item_total,0) AS item_to
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $tasks = $stmt->fetchAll();
-$categories = $pdo->query('SELECT id, name FROM categories ORDER BY name')->fetchAll();
+$categoryStmt = $pdo->prepare('SELECT id, name FROM categories WHERE workspace_id = ? ORDER BY name');
+$categoryStmt->execute([active_workspace_id()]);
+$categories = $categoryStmt->fetchAll();
 ?>
 <section class="page-heading"><div><p class="eyebrow">YOUR WORKSPACE</p><h1>All Tasks</h1><p class="muted"><?= $totalTasks ?> tugas ditemukan</p></div></section>
 <form class="filter-panel" method="get" action="index.php"><input type="hidden" name="page" value="tasks"><label class="search-input"><i class="bi bi-search"></i><input name="q" value="<?= e($search) ?>" placeholder="Cari judul atau deskripsi..."></label>

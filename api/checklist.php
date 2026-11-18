@@ -1,12 +1,17 @@
 <?php
 declare(strict_types=1);
-session_start();
+require_once __DIR__ . '/../includes/session.php';
+start_secure_session();
 date_default_timezone_set('Asia/Jakarta');
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/helpers.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/auth.php';
 
 header('Content-Type: application/json; charset=utf-8');
 try {
+    require_api_login();
+    initialize_workspace_context($pdo);
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
         throw new RuntimeException('Metode tidak diizinkan.');
@@ -94,7 +99,7 @@ try {
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }
-    $code = $exception instanceof InvalidArgumentException ? 422 : ($exception instanceof RuntimeException ? (http_response_code() === 405 ? 405 : 403) : 500);
+    $code = $exception instanceof InvalidArgumentException ? 422 : ($exception instanceof RuntimeException ? (in_array(http_response_code(), [401, 405], true) ? http_response_code() : 403) : 500);
     http_response_code($code);
     if ($code === 500) {
         error_log('TaskFlow checklist API failed: ' . $exception->getMessage());
