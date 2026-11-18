@@ -19,6 +19,7 @@ try {
     verify_csrf();
     $taskId = valid_id($_POST['task_id'] ?? null);
     $task = get_task($pdo, $taskId, false);
+    $previousStatus = (string)$task['status'];
     $action = (string)($_POST['action'] ?? '');
     $pdo->beginTransaction();
     if ($action === 'add') {
@@ -91,6 +92,9 @@ try {
         throw new InvalidArgumentException('Operasi checklist tidak dikenal.');
     }
     $state = sync_task_status($pdo, $taskId);
+    if ($previousStatus !== 'Completed' && $state['status'] === 'Completed') {
+        notify_task_participants($pdo, $taskId, 'Tugas selesai', 'telah menyelesaikan tugas');
+    }
     $pdo->commit();
     $stmt = $pdo->prepare('SELECT id, title, is_completed, sort_order FROM task_items WHERE task_id = ? ORDER BY sort_order, id');
     $stmt->execute([$taskId]);

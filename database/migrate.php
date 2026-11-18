@@ -175,6 +175,7 @@ foreach ([
     ['tasks', 'workspace_id', 'BIGINT UNSIGNED NULL'],
     ['tasks', 'created_by', 'BIGINT UNSIGNED NULL'],
     ['tasks', 'project_id', 'BIGINT UNSIGNED NULL'],
+    ['task_notes', 'user_id', 'BIGINT UNSIGNED NULL'],
 ] as [$table, $column, $definition]) {
     if (!$columnExists($table, $column)) {
         $pdo->exec("ALTER TABLE `{$table}` ADD COLUMN `{$column}` {$definition}");
@@ -199,6 +200,9 @@ if (!$indexExists('tasks', 'idx_tasks_created_by')) {
 if (!$indexExists('tasks', 'idx_tasks_project')) {
     $pdo->exec('ALTER TABLE tasks ADD KEY idx_tasks_project (project_id)');
 }
+if (!$indexExists('task_notes', 'idx_notes_user')) {
+    $pdo->exec('ALTER TABLE task_notes ADD KEY idx_notes_user (user_id)');
+}
 if (!$foreignKeyExists('categories', 'fk_categories_workspace')) {
     $pdo->exec('ALTER TABLE categories ADD CONSTRAINT fk_categories_workspace FOREIGN KEY (workspace_id) REFERENCES workspaces (id) ON DELETE CASCADE ON UPDATE CASCADE');
 }
@@ -210,6 +214,9 @@ if (!$foreignKeyExists('tasks', 'fk_tasks_creator')) {
 }
 if (!$foreignKeyExists('tasks', 'fk_tasks_project')) {
     $pdo->exec('ALTER TABLE tasks ADD CONSTRAINT fk_tasks_project FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE SET NULL ON UPDATE CASCADE');
+}
+if (!$foreignKeyExists('task_notes', 'fk_notes_user')) {
+    $pdo->exec('ALTER TABLE task_notes ADD CONSTRAINT fk_notes_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL ON UPDATE CASCADE');
 }
 
 if ($hasLegacyData) {

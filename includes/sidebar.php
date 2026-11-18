@@ -14,9 +14,12 @@
         $taskCountStmt = $pdo->prepare('SELECT COUNT(*) FROM tasks WHERE archived_at IS NULL AND workspace_id = ?');
         $taskCountStmt->execute([active_workspace_id()]);
         $workspaceTaskCount = (int)$taskCountStmt->fetchColumn();
-        $notificationStmt = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND workspace_id = ? AND is_read = 0");
+        $notificationStmt = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND (workspace_id = ? OR workspace_id IS NULL) AND is_read = 0");
         $notificationStmt->execute([current_user_id(), active_workspace_id()]);
         $unreadNotificationCount = (int)$notificationStmt->fetchColumn();
+        $inviteCountStmt = $pdo->prepare("SELECT COUNT(*) FROM workspace_invitations wi INNER JOIN users u ON u.email = wi.email WHERE u.id = ? AND wi.status = 'Pending'");
+        $inviteCountStmt->execute([current_user_id()]);
+        $unreadNotificationCount += (int)$inviteCountStmt->fetchColumn();
         $navItems = [
             ['dashboard', 'Dashboard', 'bi-grid-1x2'],
             ['tasks', 'All Tasks', 'bi-check2-square'],

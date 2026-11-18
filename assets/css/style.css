@@ -121,6 +121,7 @@ button { color: inherit; }
 .notification-list { display: grid; }
 .notification-row { display: grid; grid-template-columns: 36px minmax(0, 1fr) 32px; align-items: start; gap: 11px; padding: 12px 10px; border-bottom: 1px solid rgba(39,52,73,.7); }
 .notification-row.unread { background: rgba(99,102,241,.06); border-radius: 8px; }
+.invitation-notification { grid-template-columns: 36px minmax(0, 1fr) auto; align-items: center; }
 .notification-icon { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 50%; background: #20264a; color: #a5b4fc; }
 .notification-body { display: grid; }
 .notification-body p { margin: 4px 0; color: #cbd5e1; }

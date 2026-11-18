@@ -29,12 +29,12 @@ Untuk nama folder atau base URL lain, letakkan proyek pada direktori tersebut da
 - Dashboard dengan statistik database, tugas terbaru, deadline mendatang, dan daftar overdue.
 - Calendar View bulanan untuk melihat tugas berdasarkan deadline, termasuk navigasi bulan dan penambahan tugas langsung dari tanggal pilihan.
 - Akun pengguna, Personal Workspace privat, Team Workspace, serta workspace switcher.
-- Undangan anggota Team Workspace, penerimaan undangan, daftar anggota, pembatalan undangan, dan pengeluaran anggota.
+- Undangan anggota Team Workspace, penerimaan dari Dashboard atau Notifications, daftar anggota, pembatalan undangan, dan pengeluaran anggota. Undangan ditampilkan di aplikasi, bukan dikirim melalui email.
 - Proyek personal/team dengan status, tanggal mulai/selesai, detail tugas, progres, pembuatan, pengubahan, dan penghapusan.
-- Multi-assignee, diskusi dan komentar tugas, daily work update, project resources, notifikasi, dan dashboard ringkasan tim.
+- Multi-assignee, diskusi dan komentar tugas, daily work update, project resources, notifikasi in-app untuk tugas baru/penugasan, komentar, catatan, dan tugas selesai, serta dashboard ringkasan tim.
 - CRUD tugas, filter/pencarian, sorting, dan pagination.
 - Checklist AJAX dengan urutan, edit, hapus, toggle, dan sinkronisasi progress/status lewat transaksi database.
-- Catatan, activity log, kategori unik, archive/restore, dan penghapusan permanen dengan konfirmasi.
+- Catatan dengan nama penulis, komentar diskusi, activity log, kategori unik, archive/restore, dan penghapusan permanen dengan konfirmasi.
 - Tampilan dark mode responsif dan formulir dengan perlindungan CSRF.
 
 ## Catatan keamanan
@@ -42,3 +42,12 @@ Untuk nama folder atau base URL lain, letakkan proyek pada direktori tersebut da
 Gunakan HTTPS jika aplikasi diakses melalui jaringan. Session menggunakan cookie HttpOnly, SameSite=Lax, dan secure flag saat HTTPS aktif. Operasi formulir memakai CSRF token dan task/category dibatasi ke workspace aktif yang keanggotaannya divalidasi di backend.
 
 Google Fonts, Bootstrap, Bootstrap Icons, dan SweetAlert2 dimuat dari CDN sehingga koneksi internet diperlukan untuk memuat aset tersebut. Data aplikasi tetap disimpan di MySQL lokal.
+
+## Jika Ingin Akses Online tanpa VPS ##
+
+- Langkah Pertama download Cloudflare Tunnel https://github.com/cloudflare/cloudflared/releases/tag/2026.11.1
+- Langkah kedua cek status buat folder C:\cloudflared
+- Langkah ketiga pindahkan yang sudah didownload ke folder tersebut, lalu ubah namanya menjadi "cloudflared.exe"
+- Langkah keempat cek status "cloudflared.exe --version"
+- Langkah kelima jalankan server TaskFlow "C:\xampp\php\php.exe -S 127.0.0.1:8000 -t C:\xampp\htdocs\TaskFlow"
+- Langkah keenam buka cmd lain dan jalankan "cloudflared.exe tunnel --url http://127.0.0.1:8000"

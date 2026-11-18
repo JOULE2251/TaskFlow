@@ -164,3 +164,40 @@ function create_notification(PDO $pdo, int $userId, string $title, string $messa
     $stmt = $pdo->prepare('INSERT INTO notifications (user_id, workspace_id, title, message, link) VALUES (?, ?, ?, ?, ?)');
     $stmt->execute([$userId, active_workspace_id(), mb_substr($title, 0, 160), mb_substr($message, 0, 500), $link ? mb_substr($link, 0, 500) : null]);
 }
+
+function notify_task_participants(PDO $pdo, int $taskId, string $title, string $message, bool $includeWorkspaceMembers = false): void
+{
+    $stmt = $pdo->prepare('SELECT t.title AS task_title, t.created_by, u.name AS actor_name FROM tasks t LEFT JOIN users u ON u.id = ? WHERE t.id = ? AND t.workspace_id = ?');
+    $stmt->execute([current_user_id(), $taskId, active_workspace_id()]);
+    $task = $stmt->fetch();
+    if (!$task) {
+        throw new InvalidArgumentException('Tugas tidak ditemukan pada workspace aktif.');
+    }
+
+    $recipients = [];
+    if ($includeWorkspaceMembers) {
+        $members = $pdo->prepare('SELECT user_id FROM workspace_members WHERE workspace_id = ?');
+        $members->execute([active_workspace_id()]);
+        $recipients = array_map('intval', $members->fetchAll(PDO::FETCH_COLUMN));
+    } else {
+        $assignees = $pdo->prepare('SELECT user_id FROM task_assignees WHERE task_id = ?');
+        $assignees->execute([$taskId]);
+        $recipients = array_map('intval', $assignees->fetchAll(PDO::FETCH_COLUMN));
+        if ($task['created_by'] !== null) {
+            $recipients[] = (int)$task['created_by'];
+        }
+    }
+
+    $recipients = array_unique(array_filter($recipients, static fn(int $userId): bool => $userId !== current_user_id()));
+    $actorName = $task['actor_name'] ?: 'Anggota tim';
+    $notificationMessage = $message . ': ' . $task['task_title'];
+    if ($includeWorkspaceMembers) {
+        $notificationMessage = $actorName . ' membuat tugas: ' . $task['task_title'];
+    } else {
+        $notificationMessage = $actorName . ' ' . $message . ': ' . $task['task_title'];
+    }
+    $link = 'index.php?page=task-detail&id=' . $taskId;
+    foreach ($recipients as $recipientId) {
+        create_notification($pdo, $recipientId, $title, $notificationMessage, $link);
+    }
+}

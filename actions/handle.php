@@ -21,13 +21,7 @@ try {
             }
             sync_task_status($pdo, $taskId);
             sync_task_assignees($pdo, $taskId, $_POST['assignee_ids'] ?? []);
-            $assigneeStmt = $pdo->prepare('SELECT user_id FROM task_assignees WHERE task_id = ?');
-            $assigneeStmt->execute([$taskId]);
-            foreach ($assigneeStmt->fetchAll(PDO::FETCH_COLUMN) as $assigneeId) {
-                if ((int)$assigneeId !== current_user_id()) {
-                    create_notification($pdo, (int)$assigneeId, 'Tugas baru ditugaskan', 'Kamu ditugaskan pada tugas: ' . $title, 'index.php?page=task-detail&id=' . $taskId);
-                }
-            }
+            notify_task_participants($pdo, $taskId, 'Tugas baru', 'created', true);
             record_activity($pdo, $taskId, 'task_created', 'Task created');
             $pdo->commit();
             flash('success', 'Tugas berhasil dibuat.');
@@ -42,9 +36,19 @@ try {
             $projectId = validate_project($pdo, $_POST['project_id'] ?? null);
             $priority = validate_priority($_POST['priority'] ?? 'Medium');
             $deadline = validate_deadline($_POST['deadline'] ?? null);
+            $oldAssigneesStmt = $pdo->prepare('SELECT user_id FROM task_assignees WHERE task_id = ?');
+            $oldAssigneesStmt->execute([$taskId]);
+            $oldAssignees = array_map('intval', $oldAssigneesStmt->fetchAll(PDO::FETCH_COLUMN));
             $stmt = $pdo->prepare('UPDATE tasks SET title = ?, description = ?, category_id = ?, project_id = ?, priority = ?, deadline = ? WHERE id = ?');
             $stmt->execute([$title, $description, $categoryId, $projectId, $priority, $deadline, $taskId]);
             sync_task_assignees($pdo, $taskId, $_POST['assignee_ids'] ?? []);
+            $newAssigneesStmt = $pdo->prepare('SELECT user_id FROM task_assignees WHERE task_id = ?');
+            $newAssigneesStmt->execute([$taskId]);
+            foreach (array_diff(array_map('intval', $newAssigneesStmt->fetchAll(PDO::FETCH_COLUMN)), $oldAssignees) as $assigneeId) {
+                if ($assigneeId !== current_user_id()) {
+                    create_notification($pdo, $assigneeId, 'Tugas baru ditugaskan', 'Kamu ditugaskan pada tugas: ' . $title, 'index.php?page=task-detail&id=' . $taskId);
+                }
+            }
             record_activity($pdo, $taskId, 'task_updated', 'Task details updated');
             flash('success', 'Perubahan tugas disimpan.');
             redirect('task-detail', ['id' => $taskId]);
@@ -76,9 +80,12 @@ try {
             if ($content === '' || mb_strlen($content) > 4000) {
                 throw new InvalidArgumentException('Catatan wajib diisi dan maksimal 4.000 karakter.');
             }
-            $stmt = $pdo->prepare('INSERT INTO task_notes (task_id, content) VALUES (?, ?)');
-            $stmt->execute([$taskId, $content]);
+            $pdo->beginTransaction();
+            $stmt = $pdo->prepare('INSERT INTO task_notes (task_id, user_id, content) VALUES (?, ?, ?)');
+            $stmt->execute([$taskId, current_user_id(), $content]);
+            notify_task_participants($pdo, $taskId, 'Catatan baru pada tugas', 'menambahkan catatan');
             record_activity($pdo, $taskId, 'note_added', 'Note added');
+            $pdo->commit();
             flash('success', 'Catatan ditambahkan.');
             redirect('task-detail', ['id' => $taskId, 'section' => 'notes']);
 
@@ -202,17 +209,20 @@ try {
         case 'task-comment-delete':
             $taskId = valid_id($_POST['task_id'] ?? null);
             get_task($pdo, $taskId);
-            $commentId = valid_id($_POST['comment_id'] ?? null);
             if ($action === 'task-comment-store') {
                 $content = trim((string)($_POST['content'] ?? ''));
                 if ($content === '' || mb_strlen($content) > 4000) {
                     throw new InvalidArgumentException('Komentar wajib diisi dan maksimal 4.000 karakter.');
                 }
+                $pdo->beginTransaction();
                 $stmt = $pdo->prepare('INSERT INTO task_comments (task_id, user_id, content) VALUES (?, ?, ?)');
                 $stmt->execute([$taskId, current_user_id(), $content]);
+                notify_task_participants($pdo, $taskId, 'Komentar baru pada tugas', 'menambahkan komentar');
                 record_activity($pdo, $taskId, 'comment_added', 'Task comment added');
+                $pdo->commit();
                 flash('success', 'Komentar ditambahkan.');
             } else {
+                $commentId = valid_id($_POST['comment_id'] ?? null);
                 $stmt = $pdo->prepare('SELECT id FROM task_comments WHERE id = ? AND task_id = ?');
                 $stmt->execute([$commentId, $taskId]);
                 if (!$stmt->fetch()) {
