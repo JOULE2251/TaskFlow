@@ -51,3 +51,11 @@ Google Fonts, Bootstrap, Bootstrap Icons, dan SweetAlert2 dimuat dari CDN sehing
 - Langkah keempat cek status "cloudflared.exe --version"
 - Langkah kelima jalankan server TaskFlow "C:\xampp\php\php.exe -S 127.0.0.1:8000 -t C:\xampp\htdocs\TaskFlow"
 - Langkah keenam buka cmd lain dan jalankan "cloudflared.exe tunnel --url http://127.0.0.1:8000"
+
+<img width="1917" height="867" alt="Screenshot 2026-11-18 140905" src="https://github.com/user-attachments/assets/c8f38df2-1c3a-45e4-b84b-3a8f88746936" />
+<img width="1917" height="862" alt="Screenshot 2026-11-18 140930" src="https://github.com/user-attachments/assets/c944954e-e7b0-4cd2-903d-d4ce53517824" />
+<img width="1917" height="858" alt="Screenshot 2026-11-18 140947" src="https://github.com/user-attachments/assets/f3726f1b-a31b-41a0-951e-8c860ade295e" />
+<img width="1917" height="857" alt="Screenshot 2026-11-18 141122" src="https://github.com/user-attachments/assets/52b9be0b-b99b-4a30-807d-e2af44333870" />
+<img width="1916" height="862" alt="Screenshot 2026-11-18 141054" src="https://github.com/user-attachments/assets/02b96bff-cd61-48f8-96b7-22b9e95f8450" />
+
+
